@@ -22,8 +22,8 @@ while 1:
             cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
 
     cv2.imshow('img',img)
-    k = cv2.waitKey(30) & 0xff
-    if k == 27:
+    key = cv2.waitKey(1)
+    if key == 27:
         break
 
 cap.release()
