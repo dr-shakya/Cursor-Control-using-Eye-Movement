@@ -55,24 +55,28 @@ predictor = dlib.shape_predictor(PREDICTOR_PATH)
 (rStart, rEnd) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]
 # start the video stream thread
 print("[INFO] starting video stream thread...")
-vs = FileVideoStream(0).start()
-fileStream = True
+
+vs = cv2.VideoCapture(0)
+
+#vs = FileVideoStream(0).start()
+#fileStream = True
+
 # vs = VideoStream(src=0).start()
 # vs = VideoStream(usePiCamera=True).start()
 # fileStream = False
-time.sleep(1.0)
+#time.sleep(1.0)
 # loop over frames from the video stream
 while True:
 	# if this is a file video stream, then we need to check if
 	# there any more frames left in the buffer to process
-	if fileStream and not vs.more():
-		break
+	#if fileStream and not vs.more():
+	#	break
  
 	# grab the frame from the threaded video file stream, resize
 	# it, and convert it to grayscale
 	# channels)
-	frame = vs.read()
-	frame = imutils.resize(frame, width=450)
+	ret, frame = vs.read()
+	#frame = imutils.resize(frame, width=450)
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
  
 	# detect faces in the grayscale frame
@@ -132,4 +136,3 @@ while True:
  
 # do a bit of cleanup
 cv2.destroyAllWindows()
-vs.stop()
