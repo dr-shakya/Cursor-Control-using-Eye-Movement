@@ -63,7 +63,7 @@ def eye_aspect_ratio(eye):
 # frames the eye must be below the threshold
 PREDICTOR_PATH = "shape_predictor_68_face_landmarks.dat"
 EYE_AR_THRESH = .15
-EYE_AR_CONSEC_FRAMES = 10
+EYE_AR_CONSEC_FRAMES = 7
 # initialize the frame counters and the total number of blinks
 COUNTER = 0
 TOTAL = 0
@@ -144,12 +144,12 @@ while True:
         cv2.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
         cv2.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
         
-        if rightEAR < EYE_AR_THRESH:
+       
+        if rightEAR < .15:
+            m.click(mouseLoc[0],mouseLoc[1],clicks = 1, button = 'left', pause = 0  )
             
-            m.click(mouseLoc[0],mouseLoc[1],clicks = 1, button = 'left', pause = .2 )
-            
-        if leftEAR < EYE_AR_THRESH:
-            m.click(mouseLoc[0],mouseLoc[1],clicks = 1, button = 'right', pause = .2)
+        if leftEAR < .15:
+            m.click(mouseLoc[0],mouseLoc[1],clicks = 1, button = 'right', pause = 0)
             
         mLocOld = mouseLoc
 
