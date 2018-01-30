@@ -1,6 +1,10 @@
 import numpy as np
 import cv2
 import pyautogui as m
+from scipy.spatial import distance as dist
+from imutils import face_utils
+import imutils
+import dlib
 
 m.FAILSAFE = False
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')

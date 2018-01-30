@@ -11,6 +11,7 @@ import dlib
 import cv2
 import pyautogui as m
 
+m.FAILSAFE = False
 #taking size of screen
 (scrx,scry)=m.size()
 
@@ -21,8 +22,8 @@ DampingFactor = 15          #Supposed to make mouse smooth
 def calculateView(x,y):
     xvMax, yvMax = m.size()
     xvMin, yvMin = 0, 0
-    xwMax, xwMin = 400, 280
-    ywMax, ywMin = 350, 280
+    xwMax, xwMin = 440, 225
+    ywMax, ywMin = 290, 210
     sx = (xvMax - 0) // (xwMax - xwMin)
     sy = (yvMax - 0) // (ywMax - ywMin)
     xv = xvMin + (x - xwMin) * sx
@@ -76,6 +77,7 @@ predictor = dlib.shape_predictor(PREDICTOR_PATH)
 # right eye, respectively
 (lStart, lEnd) = face_utils.FACIAL_LANDMARKS_IDXS["left_eye"]
 (rStart, rEnd) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]
+(nStart, nEnd) = face_utils.FACIAL_LANDMARKS_IDXS["nose"]
 # start the video stream thread
 print("[INFO] starting video stream thread...")
 
@@ -116,12 +118,13 @@ while True:
         # extract the left and right eye coordinates, then use the
         # coordinates to compute the eye aspect ratio for both eyes
         leftEye = shape[lStart:lEnd]
+        nose = shape[nStart:nEnd]
         
-        print(leftEye[0])
+        print(nose[0])
         
         #get window coordinates
         
-        xv, yv = leftEye[0]
+        xv, yv = nose[0]
         
         xw = np.int(xv)
         yw = np.int(yv)
@@ -141,8 +144,10 @@ while True:
         # visualize each of the eyes
         leftEyeHull = cv2.convexHull(leftEye)
         rightEyeHull = cv2.convexHull(rightEye)
+        noseHull = cv2.convexHull(nose)
         cv2.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
         cv2.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
+        cv2.drawContours(frame, [noseHull], -1, (0, 255, 0), 1)
         
        
         if rightEAR < .15:
