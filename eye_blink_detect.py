@@ -11,6 +11,7 @@ import dlib
 import cv2
 import pyautogui as m
 
+m.FAILSAFE = False
 #taking size of screen
 (scrx,scry)=m.size()
 
@@ -21,8 +22,8 @@ DampingFactor = 15          #Supposed to make mouse smooth
 def calculateView(x,y):
     xvMax, yvMax = m.size()
     xvMin, yvMin = 0, 0
-    xwMax, xwMin = 400, 280
-    ywMax, ywMin = 350, 280
+    xwMax, xwMin = 440, 225
+    ywMax, ywMin = 290, 210
     sx = (xvMax - 0) // (xwMax - xwMin)
     sy = (yvMax - 0) // (ywMax - ywMin)
     xv = xvMin + (x - xwMin) * sx
@@ -62,8 +63,8 @@ def eye_aspect_ratio(eye):
 # blink and then a second constant for the number of consecutive
 # frames the eye must be below the threshold
 PREDICTOR_PATH = "shape_predictor_68_face_landmarks.dat"
-EYE_AR_THRESH = 0.3
-EYE_AR_CONSEC_FRAMES = 3
+EYE_AR_THRESH = .15
+EYE_AR_CONSEC_FRAMES = 10
 # initialize the frame counters and the total number of blinks
 COUNTER = 0
 TOTAL = 0
@@ -76,6 +77,7 @@ predictor = dlib.shape_predictor(PREDICTOR_PATH)
 # right eye, respectively
 (lStart, lEnd) = face_utils.FACIAL_LANDMARKS_IDXS["left_eye"]
 (rStart, rEnd) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]
+(nStart, nEnd) = face_utils.FACIAL_LANDMARKS_IDXS["nose"]
 # start the video stream thread
 print("[INFO] starting video stream thread...")
 
@@ -116,57 +118,68 @@ while True:
         # extract the left and right eye coordinates, then use the
         # coordinates to compute the eye aspect ratio for both eyes
         leftEye = shape[lStart:lEnd]
+        nose = shape[nStart:nEnd]
+        rightEye = shape[rStart:rEnd]
         
-        print(leftEye[0])
+        print(nose[0])
         
         #get window coordinates
         
-        xv, yv = leftEye[0]
+        xv, yv = nose[0]
         
         xw = np.int(xv)
         yw = np.int(yv)
         print(type(xv))
         xv,yv = calculateView(xw,yw)
          
-#For mouse control        
+        #For mouse control        
         mouseLoc = mLocOld + ((xv,yv)-mLocOld)//DampingFactor
         print('nx = {} and ny = {}'.format(mouseLoc[0], mouseLoc[1]))
         m.moveTo(mouseLoc[0],mouseLoc[1],pause = 0,tween =  m.linear(.5))
-        mLocOld = mouseLoc
         
-        rightEye = shape[rStart:rEnd]
+        
         leftEAR = eye_aspect_ratio(leftEye)
         rightEAR = eye_aspect_ratio(rightEye)
  
-        # average the eye aspect ratio together for both eyes
-        ear = (leftEAR + rightEAR) / 2.0
         # compute the convex hull for the left and right eye, then
         # visualize each of the eyes
         leftEyeHull = cv2.convexHull(leftEye)
         rightEyeHull = cv2.convexHull(rightEye)
+        noseHull = cv2.convexHull(nose)
         cv2.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
         cv2.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
-                # check to see if the eye aspect ratio is below the blink
+        cv2.drawContours(frame, [noseHull], -1, (0, 255, 0), 1)
+        
+        if rightEAR < EYE_AR_THRESH:
+            
+            m.click(mouseLoc[0],mouseLoc[1],clicks = 1, button = 'left', pause = .2 )
+            
+        if leftEAR < EYE_AR_THRESH:
+            m.click(mouseLoc[0],mouseLoc[1],clicks = 1, button = 'right', pause = .2)
+            
+        mLocOld = mouseLoc
+
+        # check to see if the eye aspect ratio is below the blink
         # threshold, and if so, increment the blink frame counter
-        if ear < EYE_AR_THRESH:
-            COUNTER += 1
- 
-        # otherwise, the eye aspect ratio is not below the blink
-        # threshold
-        else:
-            # if the eyes were closed for a sufficient number of
-            # then increment the total number of blinks
-            if COUNTER >= EYE_AR_CONSEC_FRAMES:
-                TOTAL += 1
- 
-            # reset the eye frame counter
-            COUNTER = 0
-            # draw the total number of blinks on the frame along with
-        # the computed eye aspect ratio for the frame
-        cv2.putText(frame, "Blinks: {}".format(TOTAL), (10, 30),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-        cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 30),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+#        if ear < EYE_AR_THRESH:
+#            COUNTER += 1
+# 
+#        # otherwise, the eye aspect ratio is not below the blink
+#        # threshold
+#        else:
+#            # if the eyes were closed for a sufficient number of
+#            # then increment the total number of blinks
+#            if COUNTER >= EYE_AR_CONSEC_FRAMES:
+#                TOTAL += 1
+# 
+#            # reset the eye frame counter
+#            COUNTER = 0
+#            # draw the total number of blinks on the frame along with
+#        # the computed eye aspect ratio for the frame
+#        cv2.putText(frame, "Blinks: {}".format(TOTAL), (10, 30),
+#            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+#        cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 30),
+#            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
  
     # show the frame
     cv2.imshow("Frame", frame)
