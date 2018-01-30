@@ -12,7 +12,7 @@ eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
 
 mLocOld = np.array([0,0])
 mouseLoc = np.array([0,0])
-DampingFactor = 3
+DampingFactor = 15
 
 def calculateView(x,y):
     xvMax, yvMax = m.size()
@@ -37,7 +37,7 @@ while 1:
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = cv2.flip(gray, 1)
     gray = cv2.resize(gray, (320, 240))
-    gray = cv2.bilateralFilter(gray, 9, 75, 75)
+    #gray = cv2.bilateralFilter(gray, 9, 75, 75)
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
     for (x,y,w,h) in faces:
@@ -70,7 +70,9 @@ while 1:
 
         print('nx = {} and ny = {}'.format(mouseLoc[0], mouseLoc[1]))
 
-        m.moveTo(mouseLoc[0],mouseLoc[1],tween =  m.linear(.5))
+
+
+        m.moveTo(mouseLoc[0],mouseLoc[1],pause = 0,tween =  m.linear(.5))
         mLocOld = mouseLoc
 
     cv2.imshow('img',gray)
