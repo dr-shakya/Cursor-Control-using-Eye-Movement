@@ -12,7 +12,7 @@ m.FAILSAFE = False
 
 mLocOld = np.array([0,0])
 mouseLoc = np.array([0,0])
-DampingFactor = 15          #Supposed to make mouse smooth
+DampingFactor = 15          # supposed to make mouse smooth
 
 def calculateView(x,y):
     xvMax, yvMax = m.size()
@@ -24,9 +24,6 @@ def calculateView(x,y):
     xv = xvMin + (x - xwMin) * sx
     yv = yvMin + (y - ywMin) * sy
     return xv,yv
-
-
-
 
 def eye_aspect_ratio(eye):
     # compute the euclidean distances between the two sets of
@@ -68,14 +65,8 @@ print("[INFO] starting video stream thread...")
 
 vs = cv2.VideoCapture(0)
 
-
 # loop over frames from the video stream
 while True:
-    # if this is a file video stream, then we need to check if
-    # there any more frames left in the buffer to process
-    #if fileStream and not vs.more():
-    #    break
- 
     # grab the frame from the threaded video file stream, resize
     # it, and convert it to grayscale
     # channels)
@@ -97,10 +88,12 @@ while True:
         # coordinates to compute the eye aspect ratio for both eyes
         leftEye = shape[lStart:lEnd]
         nose = shape[nStart:nEnd]
+        rightEye = shape[rStart:rEnd]
+
         print('nose')
         print(nose[0])
         
-        #get window coordinates
+        # get window coordinates
         
         xv, yv = nose[0]
         
@@ -109,12 +102,12 @@ while True:
         print(type(xv))
         xv,yv = calculateView(xw,yw)
          
-#For mouse control        
+        # for mouse control        
         mouseLoc = mLocOld + ((xv,yv)-mLocOld)//DampingFactor
         print('nx = {} and ny = {}'.format(mouseLoc[0], mouseLoc[1]))
         m.moveTo(mouseLoc[0],mouseLoc[1],pause = 0,tween =  m.linear(.5))
-        
-        rightEye = shape[rStart:rEnd]
+    
+        # calculate the eye-aspect-ratio(EAR) for both eyes
         leftEAR = eye_aspect_ratio(leftEye)
         rightEAR = eye_aspect_ratio(rightEye)
  
@@ -124,9 +117,8 @@ while True:
         rightEyeHull = cv2.convexHull(rightEye)
         cv2.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
         cv2.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
-       # cv2.drawContours(frame, [noseHull], -1, (0, 255, 0), 1)
+        #cv2.drawContours(frame, [noseHull], -1, (0, 255, 0), 1)
         
-       
         if rightEAR < .15:
             m.click(mouseLoc[0],mouseLoc[1],clicks = 1, button = 'left', pause = 0  )
             
@@ -135,14 +127,14 @@ while True:
             
         mLocOld = mouseLoc
 
- 
     # show the frame
     cv2.imshow("Frame", frame)
     key = cv2.waitKey(1) & 0xFF
  
-    # if the `q` key was pressed, break from the loop
+    # if the `q` or 'esc' key was pressed, break from the loop
     if key == ord("q"):
         break
+    elif key == 27:
+        break
  
-# do a bit of cleanup
 cv2.destroyAllWindows()
