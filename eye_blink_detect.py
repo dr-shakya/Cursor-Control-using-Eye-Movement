@@ -1,12 +1,7 @@
 # import the necessary packages
 from scipy.spatial import distance as dist
-from imutils.video import FileVideoStream
-from imutils.video import VideoStream
 from imutils import face_utils
 import numpy as np
-import argparse
-import imutils
-import time
 import dlib
 import cv2
 import pyautogui as m
@@ -22,8 +17,8 @@ DampingFactor = 15          #Supposed to make mouse smooth
 def calculateView(x,y):
     xvMax, yvMax = m.size()
     xvMin, yvMin = 0, 0
-    xwMax, xwMin = 440, 225
-    ywMax, ywMin = 290, 210
+    xwMax, xwMin = 370, 270
+    ywMax, ywMin = 290, 200
     sx = (xvMax - 0) // (xwMax - xwMin)
     sy = (yvMax - 0) // (ywMax - ywMin)
     xv = xvMin + (x - xwMin) * sx
@@ -48,16 +43,6 @@ def eye_aspect_ratio(eye):
  
     # return the eye aspect ratio
     return ear
-# construct the argument parse and parse the arguments
-
-
-#ap = argparse.ArgumentParser()
-#ap.add_argument("-p", "shape_predictor_68_face_landmarks.dat", required=True,
-#    help="path to facial landmark predictor")
-#ap.add_argument("-v", "--video", type=str, default="",
-#    help="path to input video file")
-#args = vars(ap.parse_args())
-
 
 # define two constants, one for the eye aspect ratio to indicate
 # blink and then a second constant for the number of consecutive
@@ -83,13 +68,7 @@ print("[INFO] starting video stream thread...")
 
 vs = cv2.VideoCapture(0)
 
-#vs = FileVideoStream(0).start()
-#fileStream = True
 
-# vs = VideoStream(src=0).start()
-# vs = VideoStream(usePiCamera=True).start()
-# fileStream = False
-#time.sleep(1.0)
 # loop over frames from the video stream
 while True:
     # if this is a file video stream, then we need to check if
@@ -101,7 +80,6 @@ while True:
     # it, and convert it to grayscale
     # channels)
     ret, frame = vs.read()
-    #frame = imutils.resize(frame, width=450)
     frame = cv2.flip(frame, 1)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # detect faces in the grayscale frame
@@ -119,7 +97,7 @@ while True:
         # coordinates to compute the eye aspect ratio for both eyes
         leftEye = shape[lStart:lEnd]
         nose = shape[nStart:nEnd]
-        
+        print('nose')
         print(nose[0])
         
         #get window coordinates
@@ -144,10 +122,9 @@ while True:
         # visualize each of the eyes
         leftEyeHull = cv2.convexHull(leftEye)
         rightEyeHull = cv2.convexHull(rightEye)
-        noseHull = cv2.convexHull(nose)
         cv2.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
         cv2.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
-        cv2.drawContours(frame, [noseHull], -1, (0, 255, 0), 1)
+       # cv2.drawContours(frame, [noseHull], -1, (0, 255, 0), 1)
         
        
         if rightEAR < .15:
@@ -158,27 +135,6 @@ while True:
             
         mLocOld = mouseLoc
 
-        # check to see if the eye aspect ratio is below the blink
-        # threshold, and if so, increment the blink frame counter
-#        if ear < EYE_AR_THRESH:
-#            COUNTER += 1
-# 
-#        # otherwise, the eye aspect ratio is not below the blink
-#        # threshold
-#        else:
-#            # if the eyes were closed for a sufficient number of
-#            # then increment the total number of blinks
-#            if COUNTER >= EYE_AR_CONSEC_FRAMES:
-#                TOTAL += 1
-# 
-#            # reset the eye frame counter
-#            COUNTER = 0
-#            # draw the total number of blinks on the frame along with
-#        # the computed eye aspect ratio for the frame
-#        cv2.putText(frame, "Blinks: {}".format(TOTAL), (10, 30),
-#            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-#        cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 30),
-#            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
  
     # show the frame
     cv2.imshow("Frame", frame)
